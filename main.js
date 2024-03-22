@@ -196,7 +196,7 @@ class Omada extends utils.Adapter {
     // dateMinus7Days.setDate(dateMinus7Days.getDate() - 7);
     // dateMinus7Days = Math.round(dateMinus7Days.getTime() / 1000);
     // const currentDate = Math.round(Date.now() / 1000);
-    const statusArray = [
+    let statusArray = [
       {
         url: 'sites/$id/clients?currentPageSize=500&currentPage=1&filters.active=true',
         path: 'clients',
@@ -206,41 +206,52 @@ class Omada extends utils.Adapter {
         deleteBeforeUpdate: false,
       },
       {
-        url: 'sites/$id/setting/wlans',
-        path: 'wlans',
-        desc: 'List of wlans',
-        preferedArrayName: 'id',
-        preferedArrayDesc: 'name',
-      },
-      {
         url: 'sites/$id/dashboard/overviewDiagram',
         path: 'dashboardOverviewDiagram',
         desc: 'Dashboard Overview Diagram',
       },
-      {
+    ];
+
+    if (this.config.devices) {
+      statusArray.push({
         url: 'sites/$id/grid/devices?currentPage=1&currentPageSize=500',
         path: 'devices',
         desc: 'Devices',
         preferedArrayName: 'mac',
         preferedArrayDesc: 'name',
-      },
+      });
+    }
+    
+    if (this.config.wlan) {
+      statusArray.push({
+        url: 'sites/$id/setting/wlans',
+        path: 'wlans',
+        desc: 'List of wlans',
+        preferedArrayName: 'id',
+        preferedArrayDesc: 'name',
+      });
+    }
 
-      {
+    if (this.config.insights) {
+      statusArray.push({
         url: 'sites/$id/insight/clients?currentPage=1&currentPageSize=500',
         path: 'insight',
         desc: 'Insight Clients',
         preferedArrayName: 'mac',
         preferedArrayDesc: 'name',
         deleteBeforeUpdate: false,
-      },
-      {
+      });
+    }
+
+    if (this.config.alerts) {
+      statusArray.push({
         url: 'sites/$id/site/alerts?currentPage=1&currentPageSize=100',
         path: 'alerts',
         desc: 'Alerts',
         forceIndex: true,
-      },
-    ];
-
+      });
+    }
+    
     for (const element of statusArray) {
       for (const device of this.deviceArray) {
         const url = element.url.replace('$id', device.id);
@@ -270,7 +281,7 @@ class Omada extends utils.Adapter {
               data = data.result;
             }
 
-            if (element.path === 'wlans' && data.data) {
+            if (element.path === 'wlans' && data.data && this.config.wlan) {
               this.wlans = data.data;
               this.updateSsidSettings();
             }
@@ -288,7 +299,7 @@ class Omada extends utils.Adapter {
               }
               this.clients = data.data;
             }
-            if (element.path === 'insight') {
+            if (element.path === 'insight' && this.config.insights) {
               for (const insight of this.insights) {
                 if (data.data.filter((e) => e.mac === insight.mac).length === 0) {
                   this.log.debug(`delete insight ${insight.mac} from ${device.name} (${device.id})`);

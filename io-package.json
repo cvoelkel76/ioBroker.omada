@@ -90,7 +90,11 @@
     "password": "",
     "ip": "",
     "interval": 30,
-    "port": "8043"
+    "port": "8043",
+    "wlan": false,
+    "insights": false,
+    "alerts": false,
+    "devices": true
   },
   "objects": [],
   "instanceObjects": [
